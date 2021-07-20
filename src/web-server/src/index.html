@@ -1,0 +1,77 @@
+<html>
+  <head>
+    <title>
+      Morse Code Locker Admin Panel
+    </title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <div class="container">
+    </div>
+    <script>
+      function generate(lockerId, lockerStatus) {
+        return `
+        <div class="locker ${lockerStatus == "0" ? "in-use" : "reset"}" id="${lockerId}">
+          <div class="locker__name">
+            ${lockerId}
+          </div>
+          <div class="locker__status">
+            ${lockerStatus == "0" ? "IN USE" : "RESET"}
+          </div>
+          <div class="locker__reset">
+            Reset
+          </div>
+        </div>
+        `;
+      }
+      
+      async function resetLocker() {
+        let id = this.id;
+        this.className = "locker resetting";
+        this.querySelector('.locker__status').innerText = "RESETTING";
+        await fetch("/api/reset?id=" + id);
+      }
+      
+      async function setup() {
+        let jsonData = await fetch("/api");
+        jsonData = await jsonData.json();
+        let html = Object.keys(jsonData).reduce((acc, value) => (
+          acc + generate(value, jsonData[value].charAt(1))
+        ), '');
+        
+        document.querySelector('.container').innerHTML = html;
+        
+        Object.keys(jsonData).forEach(key => {
+          document.getElementById(key).addEventListener('click', resetLocker);
+        });
+      }
+      
+      setup();
+      
+      let webSocket = new WebSocket('ws://legend-fair-syrup.glitch.me');      
+      webSocket.onmessage = async (event) => {
+        let json = JSON.parse(event.data);
+        Object.keys(json).forEach(key => {
+          let element = document.getElementById(key);
+          if ( element ) {
+            switch ( json[key].charAt(1) ) {
+              case "0":
+                if ( element.className != "resetting" ) {
+                  element.className = "locker in-use";
+                  element.querySelector('.locker__status').innerText = "IN USE";
+                }
+                break;
+              case "1":
+                element.className = "locker reset";
+                element.querySelector('.locker__status').innerText = "RESET";
+                break;
+            }
+          } else {
+            document.querySelector('.container').innerHTML += generate(key, json[key].charAt(1));
+            document.getElementById(key).addEventListener('click', resetLocker);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

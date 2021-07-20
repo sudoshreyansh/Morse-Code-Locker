@@ -1,0 +1,35 @@
+* {
+    font-family: sans-serif;
+    box-sizing: border-box;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-flow: row wrap;
+    width: 600px;
+    margin: auto;
+  }
+  
+  .locker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 48%;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .locker.in-use {
+    background: #77dd77;
+  }
+  
+  .locker.reset {
+    background: #ff6961
+  }
+  
+  .locker.resetting {
+    background: #fdfd96
+  }
